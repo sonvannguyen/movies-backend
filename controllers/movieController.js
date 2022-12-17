@@ -1,6 +1,19 @@
 const MovieModel = require('../models/Movie')
 const fs = require('fs');
 
+// xử lí khi người dùng tìm kiếm tên phim mà không gõ dấu . Tận dụng slug có sẵn trong db để tìm kiếm.
+
+const convertToSlug = (movieName) => {
+    const arrWord = movieName.split(" ").filter(word => word !== "")
+    let movieSlug = ""
+    for(let i = 0; i < arrWord.length - 1; i++){
+        movieSlug += arrWord[i] + "-"
+    }
+    movieSlug += arrWord[arrWord.length-1] 
+    
+    return movieSlug
+}
+
 const movieController = {
     createNewMovie : async (req, res) => {
         // === create movies from data in file movies.json
@@ -28,10 +41,26 @@ const movieController = {
     searchMovieByName: async(req, res) => {
         try {
             const {movieName } = req.query
+            console.log(convertToSlug(movieName))
+            console.log(movieName)
+
             const movies = await MovieModel.find({
                 $or: [
-                    {name: {$regex: movieName, $options: "i"}},
-                    {origin_name: {$regex: movieName, $options: "i"}}
+                    {
+                        name: {
+                            $regex: movieName, $options: "i"
+                        }
+                    },
+                    {
+                        origin_name: {
+                            $regex: movieName, $options: "i"
+                        }
+                    },
+                    {
+                        slug: {
+                            $regex: convertToSlug(movieName), $options: "i"
+                        }
+                    }
                 ]
             })  
 
