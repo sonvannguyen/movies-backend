@@ -3,6 +3,8 @@ const fs = require('fs');
 
 const movieController = {
     createNewMovie : async (req, res) => {
+        // === create movies from data in file movies.json
+
         // try {
         //     fs.readFile(`F:/backend web phim/movies.json`, 'utf8', (err, data) => {
         //         if (err) {
@@ -21,9 +23,28 @@ const movieController = {
         // } catch (error) {
         //     console.log(error)
         // }
-        const totalMovies = await MovieModel.countDocuments()
-        console.log(totalMovies)
+    },
+
+    searchMovieByName: async(req, res) => {
+        try {
+            const {movieName } = req.query
+            const movies = await MovieModel.find({
+                $or: [
+                    {name: {$regex: movieName, $options: "i"}},
+                    {origin_name: {$regex: movieName, $options: "i"}}
+                ]
+            })  
+
+            if(movies.length == 0){
+                return res.json({respond: "Not found"})  
+            }
+            res.json({movies})
+            
+        } catch (error) {
+            console.log(error)
+        }
     }
+
 }
 
 module.exports = movieController
