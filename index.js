@@ -42,9 +42,10 @@ app.use((err, req, res, next) => {
 
 // routes
 const movieRoute = require('./routes/movieRoute')
+const movieGroupRoute = require('./routes/movieGroupRoute')
 
 app.use('/movie', movieRoute)
-
+app.use('/admin/movieGroup', movieGroupRoute)
 
 
 app.listen(process.env.PORT || 5000, () => {

@@ -38,13 +38,13 @@ const movieController = {
         // }
     },
 
-    searchMovieByName: async(req, res) => {
+    searchMovieByName: async(req, res, next) => {
         try {
             const {movieName } = req.query
-            console.log(convertToSlug(movieName))
-            console.log(movieName)
+            const page = parseInt(req.query.page) || 1
+            const moviePerPage = 6
 
-            const movies = await MovieModel.find({
+            const query = {
                 $or: [
                     {
                         name: {
@@ -62,15 +62,30 @@ const movieController = {
                         }
                     }
                 ]
-            })  
-
-            if(movies.length == 0){
-                return res.json({respond: "Not found"})  
             }
-            res.json({movies})
+
+            const totalMovies = await MovieModel.countDocuments(query)
+
+            if(totalMovies == 0){
+                return res.json({message: "Not found movie"})
+            }
+
+            const totalPages = Math.ceil(totalMovies / moviePerPage)
+
+            const moviesData = await MovieModel.find(query)
+            .skip((moviePerPage * page) - moviePerPage)
+            .limit(moviePerPage)
+           
+            res.json({
+                totalMovies,
+                totalPages,
+                moviePerPage,
+                currentPage: page,
+                moviesData
+            })
             
         } catch (error) {
-            console.log(error)
+            next(error)
         }
     }
 
